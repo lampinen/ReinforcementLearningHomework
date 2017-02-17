@@ -60,6 +60,13 @@ for i in range(num_steps):
         lava = 0.0
         plt.figure(1)
         plt.clf()
+        plt.suptitle('control: '+str(int(control))+
+                ' onpolicy: '+str(int(onpolicy))+
+                ' gamma: '+str(gamma)+
+                ' epsilon: '+str(epsilon)+
+                ' alpha: '+str(alpha)
+                
+                )
 
         ax = plt.subplot(121)
         ax.set_title('max values')

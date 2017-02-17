@@ -5,6 +5,8 @@ class MountainCar(object):
         self.max_x = .5
         self.min_v = -.07
         self.max_v = .07
+        self.n_actions = 3
+        self.s_dim = 2
         self.reset()
     def reset(self):
         self.x = np.random.rand()*(self.max_x-self.min_x)+self.min_x
@@ -34,17 +36,22 @@ if __name__ == "__main__":
     plt.ion()
     env = MountainCar()
     s = env.reset()
-    for i in range(1000):
+    cum_r = 0.0
+    steps = int(1e4)
+    for i in range(steps):
         #a = np.random.randint(3)
         a = policy(s)
         s,r,term = env.step(a)
+        cum_r+=r
+        '''
         print(s)
         plt.clf()
         s_pos = np.linspace(env.min_x,env.max_x)
         plt.plot(s_pos,np.sin(3*s_pos)/3)
         plt.scatter(s[0],np.sin(3*s[0])/3)
         plt.pause(.01)
+        '''
         if term:
             print('win')
             s = env.reset()
-
+    print(1/(cum_r/steps))

@@ -92,7 +92,6 @@ for i in range(num_steps):
         plt.imshow(Q[:,3].reshape([5,5]))
         plt.clim(Q.min(),Q.max())
         input('Press Enter to Continue...')
-        plt.pause(.001)
         visits[:] = 0.0
 plt.ioff()
 plt.show()

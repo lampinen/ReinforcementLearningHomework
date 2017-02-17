@@ -22,9 +22,12 @@ class DQN:
         self.n_actions = env.n_actions
         self.s_dim = env.s_dim
         self.env = env
-        self.epsilon = .1
+        self.replay_dim = int(1e6)
+        self.burn_in = int(1e4)
+        self.epsilon_end = .1
+        self.anneal_frac = .2
         self.gamma = .99
-        self.lr = 1e-3
+        self.lr = 1e-4
         self.mb_dim = 300
         self.hid_dim = 1000
         self.layers = 1
@@ -63,31 +66,46 @@ class DQN:
             else:
                 s = sPrime
         return cum_reward/steps
-    def train(self,steps=10000,refresh=1000):
+    def train(self,steps=1000000,refresh=10000,timeout = 1000):
         cur_time = time.clock()
-        reward_hist = []
-        loss_hist = []
-        S = np.zeros((self.mb_dim,self.s_dim))
-        A = np.zeros((self.mb_dim),dtype=np.int64)
-        R = np.zeros((self.mb_dim,))
-        NT = np.zeros((self.mb_dim,))
-        SPrime = np.zeros((self.mb_dim,self.s_dim))
+        avg_loss = 0
+        avg_reward = 0
+        rho = .99
+        S = np.zeros((self.replay_dim,self.s_dim))
+        A = np.zeros((self.replay_dim),dtype=np.int64)
+        R = np.zeros((self.replay_dim,))
+        NT = np.zeros((self.replay_dim,))
+        SPrime = np.zeros((self.replay_dim,self.s_dim))
+
+        replay_ind = 0
+        epsilon = np.linspace(1,self.epsilon_end,int(steps*self.anneal_frac))
+        S[replay_ind] = self.env.reset()
+        episode_steps = 0
         for i in range(steps):
-            for j in range(self.mb_dim):
-                S[j] = self.env.reset()
-                if np.random.rand() < self.epsilon:
-                    A[j] = np.random.randint(self.n_actions)
+            if np.random.rand() < epsilon[min(i,len(epsilon)-1)]:
+                A[replay_ind] = np.random.randint(self.n_actions)
+            else:
+                A[replay_ind] = np.argmax(self.sess.run(self.q,feed_dict={self.s:[S[replay_ind]]})[0])
+            SPrime[replay_ind],R[replay_ind],term = self.env.step(A[replay_ind])
+            if i < steps-1:
+                if term or episode_steps > timeout:
+                    S[replay_ind+1] = self.env.reset()
+                    NT[replay_ind] = 0
+                    episode_steps = 0
                 else:
-                    A[j] = np.argmax(self.sess.run(self.q,feed_dict={self.s:[S[j]]})[0])
-                SPrime[j],R[j],NT[j] = self.env.step(A[j])
-                NT[j] = not NT[j]
-            _,loss = self.sess.run([self.train_step,self.loss],feed_dict={self.s:S,self.a:A,self.r:R,self.sPrime:SPrime,self.nt:NT})
-            loss_hist.append(loss)
-            if i % refresh == 0:
-                reward_hist.append(self.eval())
-                print('iter: ',i,' loss: ',np.mean(loss_hist),' avg time til reward: ',1.0/reward_hist[-1],' time: ',time.clock()-cur_time)
-                cur_time = time.clock()
-                loss_hist = []
+                    S[replay_ind+1] = SPrime[replay_ind].copy()
+                    NT[replay_ind] = 1
+            avg_reward = rho*avg_reward + (1-rho)*R[replay_ind]
+            replay_ind = (replay_ind + 1) % self.replay_dim
+            episode_steps+=1
+            if i > self.burn_in:
+                samples = np.random.randint(max(i,self.replay_dim),size=self.mb_dim)
+                _,loss = self.sess.run([self.train_step,self.loss],feed_dict={self.s:S[samples],self.a:A[samples],self.r:R[samples],self.sPrime:SPrime[samples],self.nt:NT[samples]})
+                avg_loss = rho*avg_loss + (1-rho)*loss
+                if i % refresh == 0:
+                    print('iter: ',i,' loss: ',avg_loss,' cur epsilon: ',epsilon[min(i,len(epsilon)-1)],' avg reward per timestep: ',avg_reward,' time: ',time.clock()-cur_time)
+                    cur_time = time.clock()
+                    loss_hist = []
 
 
 if __name__ == "__main__":

@@ -92,4 +92,5 @@ for i in range(num_steps):
         plt.imshow(Q[:,3].reshape([5,5]))
         plt.clim(Q.min(),Q.max())
         plt.pause(.1)
-plt.pause(2)
+plt.ioff()
+plt.show()

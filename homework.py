@@ -55,7 +55,7 @@ for i in range(num_steps):
     elif r < 0:
         lava+=1
     if i % refresh == 0:
-        print('avg steps per reward: ',refresh//(goals+1e-6),'avg steps per death: ', refresh//(lava+1e-6))
+        print('total steps: ',i,' avg steps per reward: ',refresh//(goals+1e-6),'avg steps per death: ', refresh//(lava+1e-6))
         goals = 0.0
         lava = 0.0
         plt.figure(1)
@@ -91,6 +91,8 @@ for i in range(num_steps):
         ax.set_title('down values')
         plt.imshow(Q[:,3].reshape([5,5]))
         plt.clim(Q.min(),Q.max())
-        plt.pause(.1)
+        input('Press Enter to Continue...')
+        plt.pause(.001)
+        visits[:] = 0.0
 plt.ioff()
 plt.show()

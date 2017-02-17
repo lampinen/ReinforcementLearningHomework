@@ -1,18 +1,3 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from grid import Grid
-plt.ion()
-
-control = False
-onpolicy = True
-epsilon = .2
-refresh = 1000
-
-env = Grid()
-num_steps = 100000
-Q = np.random.rand(25,4)/100
-gamma = .9
-alpha = .1
 '''
 s: state of the environment
 a: current action
@@ -23,12 +8,29 @@ gamma: discount rate
 alpha: learning rate
 epsilon: % random actions
 '''
+import numpy as np
+import matplotlib.pyplot as plt
+from grid import Grid
+plt.ion()
+
+#feel free to modify these variables!
+control = False
+onpolicy = False
+epsilon = .2
+gamma = .9
+alpha = .1
+num_steps = 100000
+refresh = 1000
+
+env = Grid()
+Q = np.random.rand(25,4)/100
 s = env.reset()
 a = np.random.randint(4)
 visits = np.zeros((25,))
 goals = 0.0
 lava = 0.0
 for i in range(num_steps):
+    #------main loop start----------
     sPrime,r,term = env.step(a)
     if term:
         sPrime = env.reset()
@@ -42,8 +44,11 @@ for i in range(num_steps):
     else:
         target = r + (not term)*gamma*np.max(Q[sPrime])
     Q[s,a] = (1-alpha)*Q[s,a]+alpha*target
+
     s = sPrime
     a = aPrime
+    #-----main loop end-----------
+    #this is all to draw pretty pictures -- you can ignore everything below here
     visits[s]+=1
     if r > 0:
         goals+=1
@@ -87,6 +92,4 @@ for i in range(num_steps):
         plt.imshow(Q[:,3].reshape([5,5]))
         plt.clim(Q.min(),Q.max())
         plt.pause(.1)
-#plt.ioff()
-#plt.show()
-
+plt.pause(2)

@@ -15,7 +15,7 @@ plt.ion()
 
 #feel free to modify these variables!
 control = False
-onpolicy = False
+onpolicy = True
 epsilon = .2
 gamma = .9
 alpha = .1

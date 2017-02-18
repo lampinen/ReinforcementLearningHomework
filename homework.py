@@ -13,12 +13,13 @@ import matplotlib.pyplot as plt
 from grid import Grid
 plt.ion()
 
-#feel free to modify these variables!
+#model parameters
 control = False
 onpolicy = True
 epsilon = .2
 gamma = .9
 alpha = .1
+#display parameters
 num_steps = 100000
 refresh = 1000
 
@@ -29,7 +30,7 @@ a = np.random.randint(4)
 visits = np.zeros((25,))
 goals = 0.0
 lava = 0.0
-for i in range(num_steps):
+for i in range(num_steps+1):
     #------main loop start----------
     sPrime,r,term = env.step(a)
     if term:
@@ -56,10 +57,8 @@ for i in range(num_steps):
         lava+=1
     if i % refresh == 0:
         print('total steps: ',i,
-                ' rewards: ', goals,
-                ' steps to rwd: ',refresh//(goals+1e-6),
-                ' deaths: ', lava,
-                'steps to death: ', refresh//(lava+1e-6)
+                ' rewards since last refresh: ', goals,
+                ' deaths since last refresh: ', lava,
                 )
         goals = 0.0
         lava = 0.0

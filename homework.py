@@ -55,7 +55,12 @@ for i in range(num_steps):
     elif r < 0:
         lava+=1
     if i % refresh == 0:
-        print('total steps: ',i,' avg steps per reward: ',refresh//(goals+1e-6),'avg steps per death: ', refresh//(lava+1e-6))
+        print('total steps: ',i,
+                'total reward: ', goals,
+                'total deaths: ', lava,
+                ' avg steps per reward: ',refresh//(goals+1e-6),
+                'avg steps per death: ', refresh//(lava+1e-6),
+                )
         goals = 0.0
         lava = 0.0
         plt.figure(1)
@@ -71,10 +76,12 @@ for i in range(num_steps):
         ax = plt.subplot(121)
         ax.set_title('max values')
         plt.imshow(Q.max(1).reshape([5,5]))
+        plt.clim(-1,1)
 
         ax = plt.subplot(122)
         ax.set_title('state visits')
         plt.imshow(visits.reshape([5,5]))
+        #plt.clim(0,refresh)
 
         plt.figure(2)
         plt.clf()
@@ -82,22 +89,22 @@ for i in range(num_steps):
         ax = plt.subplot(332)
         ax.set_title('up values')
         plt.imshow(Q[:,1].reshape([5,5]))
-        plt.clim(Q.min(),Q.max())
+        plt.clim(-1,1)
 
         ax = plt.subplot(334)
         ax.set_title('left values')
         plt.imshow(Q[:,2].reshape([5,5]))
-        plt.clim(Q.min(),Q.max())
+        plt.clim(-1,1)
 
         ax = plt.subplot(336)
         ax.set_title('right values')
         plt.imshow(Q[:,0].reshape([5,5]))
-        plt.clim(Q.min(),Q.max())
+        plt.clim(-1,1)
         
         ax = plt.subplot(338)
         ax.set_title('down values')
         plt.imshow(Q[:,3].reshape([5,5]))
-        plt.clim(Q.min(),Q.max())
+        plt.clim(-1,1)
         input('Press Enter to Continue...')
         visits[:] = 0.0
 plt.ioff()
